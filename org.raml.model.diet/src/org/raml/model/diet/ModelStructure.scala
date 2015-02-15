@@ -19,12 +19,12 @@ trait ResponseMember[C<:IModelElement[_]] extends IModelElement[C];
 
 abstract class NoChildren(override val name:String) extends ParentedElement[Nothing](name);
 abstract class Parameter(override val name:String) extends NoChildren(name);
-abstract class NormalParameter(override val name:String) extends Parameter(name) with ResourceTypeMember[Nothing] with MethodMember[Nothing]
-with ResourceMember[Nothing];
+abstract class NormalParameter(override val name:String) extends Parameter(name) 
 
-case class QueryParameter(override val name:String) extends NormalParameter(name);
-case class UriParameter(override val name:String) extends NormalParameter(name) ;
-case class HeaderParameter(override val name:String) extends NormalParameter(name) with MimeMember with FormChildren;
+
+case class QueryParameter(override val name:String) extends NormalParameter(name) with ResourceTypeMember[Nothing] with MethodMember[Nothing] with ResourceMember[Nothing];
+case class UriParameter(override val name:String) extends NormalParameter(name) with ResourceTypeMember[Nothing] with ResourceMember[Nothing];
+case class HeaderParameter(override val name:String) extends NormalParameter(name) with MimeMember with FormChildren with MethodMember[Nothing];
 case class FormParameter(override val name:String) extends Parameter(name) with FormChildren ;
 
 abstract class MimeTypeDescription(override val name:String, val example:String="",members:Seq[MimeMember]=List()) extends ParentedElement[MimeMember](name,members)
