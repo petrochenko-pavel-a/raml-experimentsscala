@@ -1,9 +1,9 @@
 package org.raml.model.diet;
 
-abstract class BasicElement[ParentType <: CanHaveChild, ChildType <: IModelElement[_, _]](
+abstract class BasicElement[ ChildType <: IModelElement[ _]](
   private var nm: String = null,
   private var ch: Seq[ChildType] = List(), private var desc: String = "") extends Object
-  with IModelElement[ParentType, ChildType] {
+  with IModelElement[ ChildType] {
 
   def children(): Seq[ChildType] = ch;
 
@@ -17,22 +17,36 @@ abstract class BasicElement[ParentType <: CanHaveChild, ChildType <: IModelEleme
 
   def +=(child: ChildType) {
     if (child.parent != null) {
-      val pr: CanHaveChild = child.parent.asInstanceOf[CanHaveChild];
-      pr -= child;
+      child.parent-=child;
     }
     ch = ch :+ child;
-    if (child.isInstanceOf[BasicElement[_, _]]) {
-      child.asInstanceOf[BasicElement[BasicElement[_, _], _]].onAdd(this);
+    if (child.isInstanceOf[BasicElement[ _]]) {
+      child.asInstanceOf[BasicElement[_]].onAdd(this);
     }
   }
-  protected def onAdd(p: ParentType) = {}
+  protected def onAdd(p: IModelElement[_]) = {}
   def -=(child: Any) {
     ch = ch.filter { x => x != child };
   }
+  
+  def deepCopy():BasicElement[ChildType]={
+    var t:BasicElement[ChildType]=clone.asInstanceOf[BasicElement[ChildType]];
+    t.ch=List();
+    for(c <- children){
+      t+=c.deepCopy.asInstanceOf[ChildType];
+    }
+    return t;
+  }
 }
-abstract class ParentedElement[ParentType <: CanHaveChild, ChildType <: IModelElement[_, _]](name: String, children: Seq[ChildType] = List()) extends BasicElement[ParentType, ChildType](name, children) {
-  var prt: ParentType = null.asInstanceOf[ParentType];
-  def parent(): ParentType = prt;
+abstract class ParentedElement[ChildType <: IModelElement[_]](name: String, children: Seq[ChildType] = List()) extends BasicElement[ChildType](name, children) {
+  var prt: IModelElement[_] = null;
+  def parent(): IModelElement[_] = prt;
 
-  protected override def onAdd(p: ParentType) { prt = p }
+  override def deepCopy():BasicElement[ChildType]={
+    var t=super.deepCopy().asInstanceOf[ParentedElement[ChildType]];
+    t.prt=null;
+    return t;
+  }
+  
+  protected override def onAdd(p: IModelElement[_]) { prt = p }
 }
