@@ -1,6 +1,6 @@
 package org.raml.model.diet;
 
-abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
+abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Describable
   with IModelElement[ ChildType] {
 
   def this( members:Seq[ChildType])={
@@ -10,6 +10,7 @@ abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
       this+=r;
     }
   }
+   
   var members:Seq[ChildType];
   var diet:Boolean;
   var name:String;
@@ -18,10 +19,22 @@ abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
   def _name(n:String){
     this.name=n;
   }
+  def url():String=name;
+  
+  case class NameFeature() extends Feature[String]("name",url,_name);
+  case class DescFeature() extends Feature[String]("description",description,_description);
+  case class DietFeature() extends Feature[Boolean]("diet",()=>diet,x=>diet=x);
+  
+  def features():Features={
+    var v= List(NameFeature(),DescFeature(),DietFeature());
+    return v:::valueFeatures();
+  }
+  def valueFeatures():Features=List();
+  
   
   def children(): Seq[ChildType] = members;
 
-  def description: String = desc
+  def description(): String = desc
 
   def _description(n: String) = desc = n
 
@@ -49,6 +62,7 @@ abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
   }
 }
 abstract class ParentedElement[ChildType <: IModelElement[_]]( members: Seq[ChildType] = List()) extends BasicElement[ChildType]( members) {
+  
   var prt: IModelElement[_] = null;
   def parent(): IModelElement[_] = prt;
 

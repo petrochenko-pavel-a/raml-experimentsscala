@@ -1,5 +1,6 @@
 package org.raml.model.diet;
 
+
 /*
  * traits and abstract classes
  */
@@ -47,8 +48,31 @@ case class Package(var name: String,var members:Seq[Api]=List(),var diet:Boolean
    override def parent():Project = super.parent().asInstanceOf[Project];
 }
 
+object Protocol extends Enumeration {
+   type Protocol = Value
+   val HTTP,HTTPS = Value
+}
+
 case class Api(var name: String,var members:Seq[ApiMember[_]]=List(),var diet:Boolean=false) extends ParentedElement[ApiMember[_]](members){
   override def parent():Package = super.parent().asInstanceOf[Package];
+  import Protocol._
+  var protocols:Set[Protocol]=Set();
+  var version:String="";
+  var baseUri:String="";
+  var mediaType:String="";
+  var title:String="";
+  //TODO securedBy  
+  case class TitleFeature() extends StringFeature("title",()=>title,x=>title=x);
+  
+  case class VersionFeature() extends StringFeature("version",()=>version,x=>version=x);
+  
+  case class BaseUriFeature() extends StringFeature("baseUri",()=>baseUri,x=>baseUri=x);
+  
+  case class MediaTypeFeature() extends StringFeature("mediaType",()=>mediaType,x=>mediaType=x);
+  
+  case class ProtocolFeature() extends Feature[Set[Protocol]]("protocols",()=>protocols,x=>protocols=x);
+  
+  override def valueFeatures()=List(ProtocolFeature(),VersionFeature(),BaseUriFeature(),TitleFeature(),MediaTypeFeature());
 }
 
 abstract class HasTraits[C<:IModelElement[_]](members:Seq[C]) extends ParentedElement[C](members){
@@ -91,6 +115,7 @@ object Package{
  def apply(nm:String,p:Api*)={new Package(nm,p)} 
 }
 object Api{
+  
   def apply(nm:String,p:ApiMember[_]*)={new Api(nm,p)} 
 }
 object Resource{

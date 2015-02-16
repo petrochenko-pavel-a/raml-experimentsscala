@@ -1,6 +1,6 @@
 package org.raml.model.diet;
 
-trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Serializable{
+trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Serializable with Featured{
 
   implicit def ResourceTwoList[T<:IModelElement[_]](r:T):List[T]=List(r);
   
