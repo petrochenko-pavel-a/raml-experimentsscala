@@ -2,6 +2,8 @@ package org.raml.model.diet;
 
 trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Serializable{
 
+  implicit def ResourceTwoList[T<:IModelElement[_]](r:T):List[T]=List(r);
+  
   def name: String
   def _name(n: String)
 
@@ -10,7 +12,7 @@ trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Seria
 
   def parent(): IModelElement[_];
 
-  def key(): String = if (parent != null) { parent.name + "/" + name } else { name };
+  def key(): String = if (parent != null) { parent.key + "/" + name } else { name };
 
   def children(): Seq[ChildType]
   
@@ -43,7 +45,7 @@ trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Seria
   def visit(x: Function1[IModelElement[_], Unit]): Unit = {
     children().foreach { z => x(z); z.visit(x) }
   }
-  override def toString:String=key()
+  override def toString:String=key;
   
   def +=(child: ChildType);
   def -=(child: Any) ;
@@ -67,6 +69,8 @@ trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Seria
   }
   override def clone():IModelElement[ChildType]={super.clone().asInstanceOf[IModelElement[ChildType]]}
   def сhild(name:String):Option[ChildType]=children.find { x => x.name==name }
+  def ->(name:String):ChildType=children.find { x => x.name==name }.get;
+ 
   def deepCopy():IModelElement[ChildType];
   
   def canMerge(toMerge:IModelElement[_]):Boolean=toMerge!=null&&this.getClass==toMerge.getClass

@@ -1,15 +1,24 @@
 package org.raml.model.diet;
 
-abstract class BasicElement[ ChildType <: IModelElement[ _]](
-  private var nm: String = null,
-  private var ch: Seq[ChildType] = List(), private var desc: String = "") extends Object
+abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
   with IModelElement[ ChildType] {
 
-  def children(): Seq[ChildType] = ch;
-
-  def name: String = nm;
-
-  def _name(n: String) = nm = n;
+  def this( members:Seq[ChildType])={
+    this();
+    this.members=List();
+    for (r<-members){
+      this+=r;
+    }
+  }
+  var members:Seq[ChildType];
+  var name:String;
+  var desc:String="";
+  
+  def _name(n:String){
+    this.name=n;
+  }
+  
+  def children(): Seq[ChildType] = members;
 
   def description: String = desc
 
@@ -19,26 +28,26 @@ abstract class BasicElement[ ChildType <: IModelElement[ _]](
     if (child.parent != null) {
       child.parent-=child;
     }
-    ch = ch :+ child;
+    members = members :+ child;
     if (child.isInstanceOf[BasicElement[ _]]) {
       child.asInstanceOf[BasicElement[_]].onAdd(this);
     }
   }
   protected def onAdd(p: IModelElement[_]) = {}
   def -=(child: Any) {
-    ch = ch.filter { x => x != child };
+    members = members.filter { x => x != child };
   }
   
   def deepCopy():BasicElement[ChildType]={
     var t:BasicElement[ChildType]=clone.asInstanceOf[BasicElement[ChildType]];
-    t.ch=List();
-    for(c <- children){
+    t.members=List();
+    for(c <- members){
       t+=c.deepCopy.asInstanceOf[ChildType];
     }
     return t;
   }
 }
-abstract class ParentedElement[ChildType <: IModelElement[_]](name: String, children: Seq[ChildType] = List()) extends BasicElement[ChildType](name, children) {
+abstract class ParentedElement[ChildType <: IModelElement[_]]( members: Seq[ChildType] = List()) extends BasicElement[ChildType]( members) {
   var prt: IModelElement[_] = null;
   def parent(): IModelElement[_] = prt;
 
