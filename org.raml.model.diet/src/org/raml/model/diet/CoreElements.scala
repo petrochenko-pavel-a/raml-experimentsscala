@@ -11,6 +11,7 @@ abstract class BasicElement[ ChildType <: IModelElement[ _]]() extends Object
     }
   }
   var members:Seq[ChildType];
+  var diet:Boolean;
   var name:String;
   var desc:String="";
   

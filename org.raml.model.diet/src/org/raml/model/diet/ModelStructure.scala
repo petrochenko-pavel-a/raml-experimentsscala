@@ -1,11 +1,19 @@
 package org.raml.model.diet;
 
-case class Project(var name: String,var members:Seq[Package]=List()) extends BasicElement[Package](members) {
+case class Project(var name: String,var members:Seq[Package]=List(),var diet:Boolean=false) extends BasicElement[Package](members) {
   def parent(): Null = null;
 }
-case class Package(var name: String,var members:Seq[Api]=List()) extends ParentedElement[Api](members){
+
+object Project{
+  def apply(nm:String,p:Package*)={new Project(nm,p)}
+}
+case class Package(var name: String,var members:Seq[Api]=List(),var diet:Boolean=false) extends ParentedElement[Api](members){
    override def parent():Project = super.parent().asInstanceOf[Project];
 }
+object Package{
+ def apply(nm:String,p:Api*)={new Package(nm,p)} 
+}
+
 trait ApiMember[C<:IModelElement[_]] extends IModelElement[C];
 trait ResourceTypeMember[C<:IModelElement[_]] extends IModelElement[C];
 trait ResourceMember[C<:IModelElement[_]] extends IModelElement[C];
@@ -17,7 +25,7 @@ trait BodyMember[C<:IModelElement[_]] extends IModelElement[C];
 trait ResponseMember[C<:IModelElement[_]] extends IModelElement[C];
 
 
-abstract class NoChildren(name:String) extends ParentedElement[Nothing](Nil){var members:Seq[Nothing]=Nil};
+abstract class NoChildren(name:String) extends ParentedElement[Nothing](Nil){var members:Seq[Nothing]=Nil; var diet:Boolean=false;};
 abstract class Parameter(name:String) extends NoChildren(name);
 abstract class NormalParameter(name:String) extends Parameter(name) 
 
@@ -30,17 +38,20 @@ case class FormParameter( var name:String) extends Parameter(name) with FormChil
 abstract class MimeTypeDescription(  ch:Seq[MimeMember]=List()) extends ParentedElement[MimeMember](ch)
  with BodyMember[MimeMember] with ResponseMember[MimeMember]{var example:String};
 
-case class Form(var members:Seq[FormChildren]=List()) extends ParentedElement[FormChildren](members)with BodyMember[FormChildren]
+case class Form(var members:Seq[FormChildren]=List(),var diet:Boolean=false) extends ParentedElement[FormChildren](members)with BodyMember[FormChildren]
 {var name:String="multipart/formdata";}
 
-case class Json(var example:String="",var schema:String="",var name:String="application/json",var members:Seq[MimeMember]=List()) 
+case class Json(var example:String="",var schema:String="",var name:String="application/json",var members:Seq[MimeMember]=List(),var diet:Boolean=false) 
 extends MimeTypeDescription(members);
-case class XML(var example:String="",var schema:String="",var name:String="application/xml",var members:Seq[MimeMember]=List()) extends MimeTypeDescription();
-case class Generic(var name:String,var example:String="",var members:Seq[MimeMember]=List()) extends MimeTypeDescription(members);
+case class XML(var example:String="",var schema:String="",var name:String="application/xml",var members:Seq[MimeMember]=List(),var diet:Boolean=false) extends MimeTypeDescription();
+case class Generic(var name:String,var example:String="",var members:Seq[MimeMember]=List(),var diet:Boolean=false) extends MimeTypeDescription(members);
 
 
-case class Api(var name: String,var members:Seq[ApiMember[_]]=List()) extends ParentedElement[ApiMember[_]](members){
+case class Api(var name: String,var members:Seq[ApiMember[_]]=List(),var diet:Boolean=false) extends ParentedElement[ApiMember[_]](members){
   override def parent():Package = super.parent().asInstanceOf[Package];
+}
+object Api{
+  def apply(nm:String,p:ApiMember[_]*)={new Api(nm,p)} 
 }
 
 abstract class HasTraits[C<:IModelElement[_]](members:Seq[C]) extends ParentedElement[C](members){
@@ -50,20 +61,34 @@ abstract class HasType[C<:IModelElement[_]](members:Seq[C]) extends HasTraits[C]
   var resourceType:String=null;
 }
 
-case class Resource(var name: String, var members:Seq[ResourceMember[_]]=List()) extends HasType[ResourceMember[_]](members)
- with ApiMember[ResourceMember[_]] with ResourceMember[ResourceMember[_]]{
+case class Resource(var name: String, var members:Seq[ResourceMember[_]]=List(),var diet:Boolean=false) extends HasType[ResourceMember[_]](members)
+ with ApiMember[ResourceMember[_]] with ResourceMember[ResourceMember[_]];
+
+object Resource{
+  def apply(nm:String,p:ResourceMember[_]*)={new Resource(nm,p)} 
 }
 
-case class Method(var name: String, var members:Seq[MethodMember[_]]=List()) extends HasTraits[MethodMember[_]](members)
-with ResourceTypeMember[MethodMember[_]] with ResourceMember[MethodMember[_]] {
-  }
+case class Method(var name: String, var members:Seq[MethodMember[_]]=List(),var diet:Boolean=false) extends HasTraits[MethodMember[_]](members)
+with ResourceTypeMember[MethodMember[_]] with ResourceMember[MethodMember[_]]
 
-case class Body(var members:Seq[BodyMember[_]]) extends ParentedElement[BodyMember[_]](members)with MethodMember[BodyMember[_]]{var name:String=""}
+object Method{
+  def apply(nm:String,p:MethodMember[_]*)={new Method(nm,p)} 
+}
 
-case class Response(var name: String,var members:Seq[ResponseMember[_]]) extends ParentedElement[ResponseMember[_]](members)
+case class Body(var members:Seq[BodyMember[_]],var diet:Boolean=false) extends ParentedElement[BodyMember[_]](members)with MethodMember[BodyMember[_]]{var name:String=""}
+
+object Body{
+  def apply(p:BodyMember[_]*)={new Body(p)} 
+}
+
+case class Response(var name: String,var members:Seq[ResponseMember[_]],var diet:Boolean=false) extends ParentedElement[ResponseMember[_]](members)
 with MethodMember[ResponseMember[_]]
+
+object Response{
+  def apply(nm:String,p:ResponseMember[_]*)={new Response(nm,p)} 
+}
 
 case class SecuritySchemaDeclaration(var name: String,var value:String) extends NoChildren(name) with ApiMember[Nothing]
 case class SchemaDeclaration(var name: String,var value:String) extends NoChildren(name) with ApiMember[Nothing]
-case class TraitDeclaration(var name: String,var members:Seq[MethodMember[_]]=List()) extends HasTraits[MethodMember[_]](members) with ApiMember[MethodMember[_]]
-case class ResourceTypeDeclaration( var name: String,var members:Seq[ResourceTypeMember[_]]=List()) extends HasType[ResourceTypeMember[_]](members) with ApiMember[ResourceTypeMember[_]]
+case class TraitDeclaration(var name: String,var members:Seq[MethodMember[_]]=List(),var diet:Boolean=false) extends HasTraits[MethodMember[_]](members) with ApiMember[MethodMember[_]]
+case class ResourceTypeDeclaration( var name: String,var members:Seq[ResourceTypeMember[_]]=List(),var diet:Boolean=false) extends HasType[ResourceTypeMember[_]](members) with ApiMember[ResourceTypeMember[_]]
