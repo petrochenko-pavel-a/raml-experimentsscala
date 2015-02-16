@@ -29,13 +29,14 @@ trait IModelElement[ChildType <: IModelElement[ _]] extends Cloneable with Seria
         if (t.isInstance(p)) {
           x = x :+ p.asInstanceOf[T]
         }
-    };
+     };
     return x;
   }
   def getAncestorOfKind[T](t: Class[T]): T = {
     if (t.isInstance(this)) {
       return this.asInstanceOf[T];
     }
+    
     if (parent != null && parent.isInstanceOf[IModelElement[ _]]) {
       return parent.asInstanceOf[IModelElement[ _]].getAncestorOfKind(t);
     }
