@@ -10,13 +10,15 @@ object JavaAnnotation extends MetaType("Java Annotation", JavaObject) {
   val value = str(); //EXTREME SIMPLIFICATION
 }
 object JavaObject extends MetaType("Java Model Object") {
-  val annotations = prop(JavaAnnotation)
+  val annotations = multivalue (prop(JavaAnnotation))
 }
 
 object JavaMethod extends MetaType("Simple resource type", JavaObject) {
   val parameters = multivalue(prop(JavaMethodParameter))
 
 }
+
+//
 /**
  * Think more about it!!!//TODO
  */

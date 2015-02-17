@@ -1,9 +1,12 @@
 package org.raml.metamodel;
 import scala.util.matching.Regex
-
+/**
+ * Basic resource 
+ */
 trait Entity[T>:Null]{
   
   def description(description:String):T=null;
+  def annotate(annotation:Any):T=null;
 }
 
 trait Embedded;
@@ -48,8 +51,6 @@ class MetaType[B<:Type](private val desc:String,private val sTypes:B=null)extend
   def superType=sTypes;
   
   override def toString()=name();
-  
-  
   def str()=new Prop(this,Str);
   def bool()=new Prop(this,BooleanType);
   def prop[T<:Type](t:T)=new Prop(this,t);
